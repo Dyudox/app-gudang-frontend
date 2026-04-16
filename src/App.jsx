@@ -1,121 +1,168 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Barang from "./pages/Barang"; // Import file yang baru dibuat
+import KategoriBarang from "./pages/KategoriBarang";
+import TambahBarang from "./pages/TambahBarang";
+import EditBarang from "./pages/EditBarang";
+import Users from "./pages/Users";
+import TambahUser from "./pages/TambahUser";
+import EditUser from "./pages/EditUser";
+import UserGroups from "./pages/UserGroups";
+import Logs from "./pages/Logs";
+import Settings from "./pages/Settings";
+
+// Komponen Pembungkus untuk Proteksi Halaman
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
+// Komponen Pembungkus agar user yang sudah login tidak bisa balik ke halaman Login
+const PublicRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Routes>
+        {/* Halaman Login: Hanya bisa dibuka jika BELUM login */}
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
 
-      <div className="ticks"></div>
+        {/* Halaman Dashboard: Hanya bisa dibuka jika SUDAH login */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        {/* Halaman Barang */}
+        <Route
+          path="/barang"
+          element={
+            <ProtectedRoute>
+              <Barang />
+            </ProtectedRoute>
+          }
+        />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* Halaman Kategori Barang */}
+        <Route
+          path="/kategori"
+          element={
+            <ProtectedRoute>
+              <KategoriBarang />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Tambah Barang */}
+        <Route
+          path="/barang/tambah"
+          element={
+            <ProtectedRoute>
+              <TambahBarang />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Edit Barang */}
+        <Route
+          path="/barang/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditBarang />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Users */}
+        <Route
+          path="/users/"
+          element={
+            <ProtectedRoute>
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Tambah User */}
+        <Route
+          path="/users/tambah"
+          element={
+            <ProtectedRoute>
+              <TambahUser />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Edit User */}
+        <Route
+          path="/users/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditUser />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman User Groups */}
+        <Route
+          path="/users/roles"
+          element={
+            <ProtectedRoute>
+              <UserGroups />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Logs */}
+        <Route
+          path="/logs"
+          element={
+            <ProtectedRoute>
+              <Logs />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Settings */}
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
