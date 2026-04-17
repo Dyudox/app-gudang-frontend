@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  User,
   LayoutDashboard,
   Users,
   Package,
@@ -15,8 +14,6 @@ import {
   PlusCircle,
   UserPlus,
   ShieldCheck,
-  TagIcon,
-  TagsIcon,
   LucideTags,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,7 +44,7 @@ export default function Sidebar() {
         { label: "Hak Akses", path: "/users/roles", icon: ShieldCheck },
       ],
     },
-    { icon: History, label: "Log Transaksi", path: "/logs" },
+    { icon: History, label: "Transaksi", path: "/transaksi" },
     { icon: Settings, label: "Pengaturan", path: "/settings" },
   ];
 

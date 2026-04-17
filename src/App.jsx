@@ -14,7 +14,7 @@ import Users from "./pages/Users";
 import TambahUser from "./pages/TambahUser";
 import EditUser from "./pages/EditUser";
 import UserGroups from "./pages/UserGroups";
-import Logs from "./pages/Logs";
+import Transaksi from "./pages/Transaksi";
 import Settings from "./pages/Settings";
 
 // Komponen Pembungkus untuk Proteksi Halaman
@@ -139,12 +139,12 @@ function App() {
           }
         />
 
-        {/* Halaman Logs */}
+        {/* Halaman Transaksi */}
         <Route
-          path="/logs"
+          path="/transaksi"
           element={
             <ProtectedRoute>
-              <Logs />
+              <Transaksi />
             </ProtectedRoute>
           }
         />
