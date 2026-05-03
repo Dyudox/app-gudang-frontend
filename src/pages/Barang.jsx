@@ -19,9 +19,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ListFilter,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAccess } from "../hooks/useAccess.js";
 
 export default function Barang() {
   const [barang, setBarang] = useState([]);
@@ -75,6 +77,10 @@ export default function Barang() {
     return targetSearch.includes(searchTerm.toLowerCase());
   });
 
+  // Pastikan key "CAN_EDIT_BARANG" sesuai dengan yang ada di PERMISSIONS pada constants.js
+  const canManage = useAccess("CAN_EDIT_BARANG");
+  const canAdd = useAccess("CAN_ADD_BARANG");
+
   // Logika Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -98,11 +104,27 @@ export default function Barang() {
                 Manajemen stok unit dan sparepart.
               </p>
             </div>
-            <Link to="/barang/tambah">
-              <Button className="bg-blue-600 hover:bg-blue-700 flex gap-2 shadow-md">
-                <Plus size={18} /> Tambah Barang
-              </Button>
-            </Link>
+            {canAdd && (
+              <Link to="/barang/tambah">
+                <Button className="bg-blue-600 hover:bg-blue-700 flex gap-2 shadow-md">
+                  <Plus size={18} /> Tambah Barang
+                </Button>
+              </Link>
+            )}
+
+            {/* Opsi: Jika ingin tetap menampilkan sesuatu untuk staff, 
+            Anda bisa tambahkan else di sini (misal: "Read Only") */}
+            {/* {!canAdd && (
+              <span className="text-xs text-slate-400 italic">Read Only</span>
+              // <Link to={canAdd ? "/barang/tambah" : "#"}>
+              //   <Button
+              //     className="bg-blue-600 hover:bg-blue-700 flex gap-2 shadow-md"
+              //     disabled={!canAdd}
+              //   >
+              //     <Plus size={18} /> Tambah Barang
+              //   </Button>
+              // </Link>
+            )} */}
           </div>
 
           {/* Toolbar: Search & Row Selector */}
@@ -151,131 +173,159 @@ export default function Barang() {
           </Card>
 
           {/* Tabel */}
-          <Card className="shadow-sm border-none overflow-hidden bg-white mb-6">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-slate-50/80">
-                    <TableRow>
-                      <TableHead className="w-[50px] text-center font-bold py-4 text-slate-700">
-                        No
-                      </TableHead>
-                      <TableHead className="font-bold py-4 text-slate-700">
-                        SN / Nama Barang
-                      </TableHead>
-                      <TableHead className="font-bold py-4 text-slate-700">
-                        Merk & Kategori
-                      </TableHead>
-                      <TableHead className="font-bold py-4 text-slate-700">
-                        Lokasi Rak
-                      </TableHead>
-                      <TableHead className="text-right font-bold py-4 text-slate-700">
-                        Stok
-                      </TableHead>
-                      <TableHead className="text-center font-bold py-4 text-slate-700">
-                        Aksi
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+            <Card className="shadow-sm border-none overflow-hidden bg-white mb-6">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-slate-50/80">
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-20">
-                          <Loader2
-                            className="animate-spin inline-block text-blue-600"
-                            size={32}
-                          />
-                        </TableCell>
+                        <TableHead className="w-[50px] text-center font-bold py-4 text-slate-700">
+                          No
+                        </TableHead>
+                        <TableHead className="font-bold py-4 text-slate-700">
+                          SN / Nama Barang
+                        </TableHead>
+                        <TableHead className="font-bold py-4 text-slate-700">
+                          Merk & Kategori
+                        </TableHead>
+                        <TableHead className="font-bold py-4 text-slate-700">
+                          Lokasi Gudang
+                        </TableHead>
+                        <TableHead className="font-bold py-4 text-slate-700">
+                          Lokasi Rak
+                        </TableHead>
+                        <TableHead className="text-right font-bold py-4 text-slate-700">
+                          Stok
+                        </TableHead>
+                        <TableHead className="text-center font-bold py-4 text-slate-700">
+                          Aksi
+                        </TableHead>
                       </TableRow>
-                    ) : currentItems.length > 0 ? (
-                      currentItems.map((item, index) => (
-                        <TableRow
-                          key={index}
-                          className="hover:bg-slate-50/50 transition-colors"
-                        >
-                          <TableCell className="text-center text-slate-400 text-sm">
-                            {indexOfFirstItem + index + 1}
-                          </TableCell>
-
-                          <TableCell className="py-4">
-                            <div className="flex flex-col">
-                              <span className="text-[10px] font-mono text-slate-400 uppercase">
-                                SN: {item.serial_number || "-"}
-                              </span>
-                              <span className="font-bold text-slate-700 leading-tight">
-                                {item.nama_barang}
-                              </span>
-                              <span className="text-[10px] text-slate-400 italic truncate max-w-[200px]">
-                                {item.keterangan || ""}
-                              </span>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className="py-4 text-sm">
-                            <div className="flex flex-col gap-1">
-                              <span className="font-medium text-slate-600 flex items-center gap-1">
-                                <Tag size={12} className="text-blue-500" />{" "}
-                                {item.merk || "-"}
-                              </span>
-                              <span className="w-fit px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold uppercase tracking-wider">
-                                {item.kategori || "Umum"}
-                              </span>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className="py-4 text-sm text-slate-500">
-                            <div className="flex items-center gap-1">
-                              <MapPin size={14} className="text-red-400" />
-                              {item.lokasi_rak || "Gudang Utama"}
-                            </div>
-                          </TableCell>
-
-                          <TableCell className="text-right py-4 font-black">
-                            <span
-                              className={`text-lg ${item.stok <= 5 ? "text-red-500" : "text-blue-600"}`}
-                            >
-                              {item.stok}
-                            </span>
-                          </TableCell>
-
-                          <TableCell className="text-center py-4">
-                            <Link to={`/barang/edit/${item.id}`}>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-blue-600 border-blue-100 hover:bg-blue-50 font-semibold"
-                              >
-                                Edit
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleDelete(item.id, item.nama_barang)
-                              } // Tambahkan ini
-                              className="h-8 text-red-500 border-red-100 hover:bg-red-50"
-                            >
-                              Hapus
-                            </Button>
+                    </TableHeader>
+                    <TableBody>
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-20">
+                            <Loader2
+                              className="animate-spin inline-block text-blue-600"
+                              size={32}
+                            />
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={6}
-                          className="text-center py-20 text-slate-400"
-                        >
-                          Data barang tidak ditemukan.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                      ) : currentItems.length > 0 ? (
+                        currentItems.map((item, index) => (
+                          <TableRow
+                            key={index}
+                            className="hover:bg-slate-50/50 transition-colors"
+                          >
+                            <TableCell className="text-center text-slate-400 text-sm">
+                              {indexOfFirstItem + index + 1}
+                            </TableCell>
+
+                            <TableCell className="py-4">
+                              <div className="flex flex-col">
+                                <span className="text-[10px] font-mono text-slate-400 uppercase">
+                                  SN: {item.serial_number || "-"}
+                                </span>
+                                <span className="font-bold text-slate-700 leading-tight">
+                                  {item.nama_barang}
+                                </span>
+                                <span className="text-[10px] text-slate-400 italic truncate max-w-[200px]">
+                                  {item.keterangan || ""}
+                                </span>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-4 text-sm">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-medium text-slate-600 flex items-center gap-1">
+                                  <Tag size={12} className="text-blue-500" />{" "}
+                                  {item.merk || "-"}
+                                </span>
+                                <span className="w-fit px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px] font-bold uppercase tracking-wider">
+                                  {item.kategori || "Umum"}
+                                </span>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-4 text-sm text-slate-500">
+                              <div className="flex items-center gap-1">
+                                <Building2
+                                  size={14}
+                                  className="text-blue-400"
+                                />
+                                {item.lokasi_gudang || "Gudang Utama"}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-4 text-sm text-slate-500">
+                              <div className="flex items-center gap-1">
+                                <MapPin size={14} className="text-red-400" />
+                                {item.lokasi_rak || "Gudang Utama"}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="text-right py-4 font-black">
+                              <span
+                                className={`text-lg ${item.stok <= 5 ? "text-red-500" : "text-blue-600"}`}
+                              >
+                                {item.stok}
+                              </span>
+                            </TableCell>
+
+                            <TableCell className="text-center py-4">
+                              {/* Gunakan conditional rendering */}
+                              {canManage && (
+                                <div className="flex justify-center gap-2">
+                                  <Link to={`/barang/edit/${item.id}`}>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-8 text-blue-600 border-blue-100 hover:bg-blue-50 font-semibold"
+                                    >
+                                      Edit
+                                    </Button>
+                                  </Link>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleDelete(item.id, item.nama_barang)
+                                    }
+                                    className="h-8 text-red-500 border-red-100 hover:bg-red-50"
+                                  >
+                                    Hapus
+                                  </Button>
+                                </div>
+                              )}
+
+                              {/* Opsi: Jika ingin tetap menampilkan sesuatu untuk staff, 
+                            Anda bisa tambahkan else di sini (misal: "Read Only") */}
+                              {!canManage && (
+                                <span className="text-xs text-slate-400 italic">
+                                  Read Only
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={6}
+                            className="text-center py-20 text-slate-400"
+                          >
+                            Data barang tidak ditemukan.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Pagination Controls */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-2 mb-10">

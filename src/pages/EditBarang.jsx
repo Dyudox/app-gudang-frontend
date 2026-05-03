@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../api/axiosConfig";
 import Sidebar from "../components/Sidebar";
 import {
   Card,
@@ -30,29 +30,64 @@ export default function EditBarang() {
     keterangan: "",
   });
 
+  const [gudangList, setGudangList] = useState([]);
+  const [rakList, setRakList] = useState([]);
+
+  // 1. Fungsi reusable untuk mengambil rak berdasarkan gudang
+  const fetchRakByGudang = async (gudangId) => {
+    if (!gudangId) {
+      setRakList([]);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:5000/api/barang/rak/by-gudang/${gudangId}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setRakList(res.data);
+    } catch (err) {
+      console.error("Gagal load rak:", err);
+      setRakList([]);
+    }
+  };
+
+  // 2. Fungsi untuk handle perubahan gudang
+  const handleGudangChange = async (e) => {
+    const gudangId = e.target.value;
+    setFormData({ ...formData, lokasi_gudang: gudangId, lokasi_rak: "" });
+    await fetchRakByGudang(gudangId);
+  };
+
+  // 3. Efek untuk memuat data awal (Edit)
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setFetching(true);
         const token = localStorage.getItem("token");
-        // 1. Ambil Kategori
-        const resGroups = await axios.get(
-          "http://localhost:5000/api/barang/groups",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        setGroups(resGroups.data);
+        const headers = { Authorization: `Bearer ${token}` };
 
-        // 2. Ambil Data Barang Lama (Kita buat API-nya di backend setelah ini)
-        const resBarang = await axios.get(
-          `http://localhost:5000/api/barang/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        // Ambil semua data master dan data barang sekaligus
+        const [resGroups, resGudang, resBarang] = await Promise.all([
+          axios.get("http://localhost:5000/api/barang/groups", { headers }),
+          axios.get("http://localhost:5000/api/barang/gudang", { headers }),
+          axios.get(`http://localhost:5000/api/barang/${id}`, { headers }),
+        ]);
+
+        setGroups(resGroups.data);
+        setGudangList(resGudang.data);
 
         if (resBarang.data) {
-          setFormData(resBarang.data);
+          setFormData({
+            ...resBarang.data,
+            lokasi_gudang: resBarang.data.lokasi_gudang || "",
+            lokasi_rak: resBarang.data.lokasi_rak || "",
+          });
+
+          // Panggil fungsi untuk mengisi daftar rak berdasarkan gudang yang terpilih
+          if (resBarang.data.lokasi_gudang) {
+            await fetchRakByGudang(resBarang.data.lokasi_gudang);
+          }
         }
       } catch (err) {
         console.error("Gagal mengambil data:", err);
@@ -62,7 +97,10 @@ export default function EditBarang() {
         setFetching(false);
       }
     };
-    fetchData();
+
+    if (id) {
+      fetchData();
+    }
   }, [id, navigate]);
 
   const handleChange = (e) => {
@@ -176,19 +214,7 @@ export default function EditBarang() {
                       ))}
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Stok
-                    </label>
-                    <input
-                      type="number"
-                      name="stok"
-                      value={formData.stok || 0}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">
                       Lokasi Rak
                     </label>
@@ -198,7 +224,65 @@ export default function EditBarang() {
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
                       onChange={handleChange}
                     />
+                  </div> */}
+                  {/* Lokasi gudang */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700">
+                      Lokasi Gudang
+                    </label>
+                    <select
+                      name="lokasi_gudang"
+                      value={formData.lokasi_gudang}
+                      onChange={handleGudangChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                    >
+                      <option value="">Pilih Gudang</option>
+                      {gudangList.map((g) => {
+                        // Console log ini akan muncul 10 kali di konsol browser kamu (sesuai jumlah data)
+                        // console.log("Item gudang yang diproses:", g);
+
+                        return (
+                          <option key={g.id} value={g.id}>
+                            {g.nama_gudang}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
+
+                  {/* Lokasi Rak */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700">
+                      Lokasi Rak
+                    </label>
+                    <select
+                      name="lokasi_rak"
+                      value={formData.lokasi_rak}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                      disabled={!formData.lokasi_gudang}
+                    >
+                      <option value="">Pilih Rak</option>
+                      {rakList.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.nama_rak}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700">
+                    Stok
+                  </label>
+                  <input
+                    type="number"
+                    name="stok"
+                    placeholder="0"
+                    value={formData.stok || "0"}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={handleChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700">

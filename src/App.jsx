@@ -15,6 +15,11 @@ import TambahUser from "./pages/TambahUser";
 import EditUser from "./pages/EditUser";
 import UserGroups from "./pages/UserGroups";
 import Transaksi from "./pages/Transaksi";
+import LaporanStok from "./pages/laporan/LaporanStok";
+import MutasiBarang from "./pages/laporan/mutasi/MutasiBarang";
+import LaporanRetur from "./pages/laporan/LaporanRetur";
+import AnalisisKategori from "./pages/laporan/AnalisisKategori";
+import LaporanHistoris from "./pages/laporan/LaporanHistoris";
 import Settings from "./pages/Settings";
 
 // Komponen Pembungkus untuk Proteksi Halaman
@@ -145,6 +150,56 @@ function App() {
           element={
             <ProtectedRoute>
               <Transaksi />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Laporan Stok */}
+        <Route
+          path="/laporan/stok"
+          element={
+            <ProtectedRoute>
+              <LaporanStok />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Mutasi Barang */}
+        <Route
+          path="/laporan/mutasi"
+          element={
+            <ProtectedRoute>
+              <MutasiBarang />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Laporan Retur */}
+        <Route
+          path="/laporan/retur"
+          element={
+            <ProtectedRoute>
+              <LaporanRetur />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Analisis Kategori */}
+        <Route
+          path="/laporan/kategori"
+          element={
+            <ProtectedRoute>
+              <AnalisisKategori />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Halaman Laporan Historis */}
+        <Route
+          path="/laporan/historis"
+          element={
+            <ProtectedRoute>
+              <LaporanHistoris />
             </ProtectedRoute>
           }
         />

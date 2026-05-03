@@ -2,6 +2,7 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: "http://localhost:5000/api",
+  withCredentials: true,
 });
 
 // Request Interceptor: Otomatis tambahkan token ke setiap request
@@ -21,7 +22,7 @@ instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // alert("Sesi Anda telah berakhir. Silakan login kembali.");
+      alert("Sesi Anda telah berakhir. Silakan login kembali.");
 
       // Token expired atau tidak valid
       localStorage.removeItem("token");

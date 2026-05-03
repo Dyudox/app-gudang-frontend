@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAccess } from "../hooks/useAccess.js";
 
 export default function Users() {
   const [users, setUsers] = useState([]);

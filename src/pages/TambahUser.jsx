@@ -130,9 +130,9 @@ export default function TambahUser() {
                     value={formData.user_group_id}
                     onChange={handleChange}
                   >
-                    <option value="1">Level 1 (Super Admin)</option>
-                    <option value="2">Level 2 (Admin Gudang / User)</option>
-                    <option value="3">Level 3 (Viewer)</option>
+                    <option value="1">Level 1 (Administrator)</option>
+                    <option value="2">Level 2 (Manager)</option>
+                    <option value="3">Level 3 (Staff)</option>
                   </select>
                   <p className="text-[11px] text-slate-400 mt-1">
                     * Level menentukan izin hapus dan edit data.

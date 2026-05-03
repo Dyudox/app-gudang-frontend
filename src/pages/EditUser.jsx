@@ -133,9 +133,9 @@ export default function EditUser() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   >
-                    <option value="1">Level 1 (Super Admin)</option>
-                    <option value="2">Level 2 (Admin Gudang)</option>
-                    <option value="3">Level 3 (Viewer)</option>
+                    <option value="1">Level 1 (Administrator)</option>
+                    <option value="2">Level 2 (Manager)</option>
+                    <option value="3">Level 3 (Staff)</option>
                   </select>
                 </div>
                 <Button

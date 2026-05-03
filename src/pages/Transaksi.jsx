@@ -4,6 +4,12 @@ import Sidebar from "../components/Sidebar";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Barcode,
   ArrowUpCircle,
   ArrowDownCircle,
@@ -22,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
+import ReturForm from "../components/ReturForm";
 
 export default function Transaksi() {
   const [barcode, setBarcode] = useState("");
@@ -108,6 +115,18 @@ export default function Transaksi() {
       console.error("DETAIL ERROR:", err);
       alert(err.response?.data?.message || "Gagal menyimpan transaksi");
     }
+  };
+
+  // Modal Retur
+  const [showRetur, setShowRetur] = useState(false);
+  const [selectedTransaksi, setSelectedTransaksi] = useState(null);
+
+  // Fungsi untuk membuka modal retur
+  const handleOpenRetur = (transaksi) => {
+    // Di sini kita bisa filter item yang bisa diretur dari transaksi tersebut
+    // console.log("Data Transaksi:", transaksi); // CEK DI CONSOLE
+    setSelectedTransaksi(transaksi);
+    setShowRetur(true);
   };
 
   return (
@@ -320,6 +339,7 @@ export default function Transaksi() {
                       <TableHead>Barang</TableHead>
                       <TableHead>Petugas</TableHead>
                       <TableHead>Tipe</TableHead>
+                      <TableHead>Retur</TableHead>
                       <TableHead className="text-right">Jumlah</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -391,6 +411,39 @@ export default function Transaksi() {
                             </span>
                           </TableCell>
 
+                          {/* Kolom Retur */}
+                          <TableCell className="text-right">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleOpenRetur(t)}
+                                      className="text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                                    >
+                                      <RotateCcw size={16} />
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Input Retur Barang</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                          {/* <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenRetur(t)}
+                              className="text-blue-600 hover:bg-blue-50"
+                            >
+                              <RotateCcw size={16} />
+                            </Button>
+                          </TableCell> */}
+
                           {/* Kolom Jumlah */}
                           <TableCell className="text-right font-black text-slate-800">
                             <span
@@ -409,7 +462,7 @@ export default function Transaksi() {
                     ) : (
                       <TableRow>
                         <TableCell
-                          colSpan={5}
+                          colSpan={7}
                           className="text-center py-10 text-slate-400"
                         >
                           Belum ada riwayat transaksi.
@@ -422,6 +475,38 @@ export default function Transaksi() {
             </Card>
           </div>
         </div>
+
+        {/* MODAL RETUR */}
+        {showRetur && selectedTransaksi && (
+          <ReturForm
+            transaksi={selectedTransaksi}
+            onClose={() => setShowRetur(false)}
+            onSubmit={async (data) => {
+              try {
+                if (data.jumlah <= 0) {
+                  alert("Mohon masukkan jumlah retur yang valid (minimal 1)");
+                  return; // Stop proses agar tidak kirim data kosong ke backend
+                }
+
+                const token = localStorage.getItem("token");
+                // Pastikan URL sesuai dengan endpoint di server kamu
+                await axios.post("http://localhost:5000/api/retur", data, {
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+
+                alert("Retur berhasil disimpan!");
+                setShowRetur(false);
+                fetchRiwayat(); // Refresh tabel setelah sukses
+              } catch (err) {
+                console.error("Error:", err);
+                alert(
+                  "Gagal menyimpan: " +
+                    (err.response?.data?.message || "Terjadi kesalahan"),
+                );
+              }
+            }}
+          />
+        )}
       </main>
     </div>
   );
