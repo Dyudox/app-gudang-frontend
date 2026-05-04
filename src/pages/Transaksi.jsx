@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import ReturForm from "../components/ReturForm";
+import ReturForm from "../components/modal/ReturForm";
 
 export default function Transaksi() {
   const [barcode, setBarcode] = useState("");
@@ -38,13 +38,15 @@ export default function Transaksi() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const [riwayat, setRiwayat] = useState([]);
+  const [lokasiList, setLokasiList] = useState([]);
+  const [selectedLokasi, setSelectedLokasi] = useState(""); // Format: gudangId-rakId
 
   // Fungsi untuk ambil riwayat dari API
   const fetchRiwayat = async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:5000/api/barang/transaksi/recent",
+        "http://localhost:5000/api/transaksi/recent",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -61,22 +63,42 @@ export default function Transaksi() {
     fetchRiwayat(); // Ambil riwayat saat pertama kali buka halaman
   }, []);
 
+  // Fungsi untuk memilih lokasi rak
+  const dataLokasiTerpilih = lokasiList.find(
+    (loc) => `${loc.gudang_id}-${loc.rak_id}` === selectedLokasi,
+  );
+
+  // Tentukan teks yang akan ditampilkan
+  const labelLokasi = dataLokasiTerpilih
+    ? `${dataLokasiTerpilih.nama_gudang} - ${dataLokasiTerpilih.nama_rak}`
+    : "Pilih Lokasi";
+
+  const infoTeks = dataLokasiTerpilih
+    ? `Barang ini tersimpan di : | ${dataLokasiTerpilih.nama_gudang} : Rak ${dataLokasiTerpilih.nama_rak} 
+      | Stok : ${dataLokasiTerpilih.stok_lokasi}`
+    : "Pilih lokasi rak dari daftar untuk melihat detail penempatan barang.";
+
+  // End lokasi
+
   const handleCariBarang = async (e) => {
     e.preventDefault();
-    if (!barcode) return;
-
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:5000/api/barang/barcode/${barcode}`,
+        `http://localhost:5000/api/transaksi/cari/${barcode}`,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         },
       );
-      setBarang(res.data);
+
+      // res.data adalah array lokasi
+      setBarang({
+        ...res.data[0], // Data barang (ambil dari elemen pertama)
+        stok: res.data[0].total_stok,
+      });
+      setLokasiList(res.data); // List rak tempat barang berada
     } catch (err) {
-      alert("Barang dengan barcode tersebut tidak ditemukan!");
+      alert("Barang atau lokasi tidak ditemukan!");
       setBarang(null);
     } finally {
       setLoading(false);
@@ -84,36 +106,38 @@ export default function Transaksi() {
   };
 
   const handleSimpan = async () => {
-    if (!barang || jumlah < 1) return;
+    if (!barang || !selectedLokasi || jumlah < 1) {
+      alert("Pastikan barang, lokasi, dan jumlah sudah diisi!");
+      return;
+    }
+
+    // Pecah "1-5" menjadi 1 dan 5
+    const [gudang_id, rak_id] = selectedLokasi.split("-").map(Number);
 
     try {
       const token = localStorage.getItem("token");
-      // Tambahkan "const res =" di depan axios.post jika ingin menggunakan variabel res
       const res = await axios.post(
-        "http://localhost:5000/api/barang/transaksi",
+        "http://localhost:5000/api/transaksi",
         {
           barang_id: barang.id,
+          gudang_id: gudang_id, // Penting: harus dikirim
+          rak_id: rak_id, // Penting: harus dikirim
           tipe_transaksi: tipe,
           jumlah: parseInt(jumlah),
-          keterangan: `Input via scanner - ${tipe}`,
         },
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      console.log("Respon sukses:", res.data); // Sekarang 'res' sudah ada
-      alert(`Berhasil mencatat barang ${tipe.toLowerCase()}!`);
-
-      fetchRiwayat(); // Refresh tabel riwayat otomatis
-
-      // Reset form
+      alert(`Berhasil mencatat transaksi ${tipe}!`);
+      fetchRiwayat();
       setBarang(null);
       setBarcode("");
       setJumlah(1);
-      inputRef.current.focus();
     } catch (err) {
-      // Hapus baris yang memanggil 'res' di dalam catch karena res tidak ada jika error
-      console.error("DETAIL ERROR:", err);
-      alert(err.response?.data?.message || "Gagal menyimpan transaksi");
+      // Tampilkan detail error dari server
+      const errorMessage = err.response?.data?.error || err.message;
+      console.error("DEBUG ERROR:", err.response?.data);
+      alert("Gagal menyimpan: " + errorMessage);
     }
   };
 
@@ -212,7 +236,7 @@ export default function Transaksi() {
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block">
-                          Stok Saat Ini
+                          Total Stok Saat Ini
                         </span>
                         <span
                           className={`text-3xl font-black ${barang.stok <= 5 ? "text-red-500" : "text-blue-600"}`}
@@ -220,6 +244,26 @@ export default function Transaksi() {
                           {barang.stok}
                         </span>
                       </div>
+                    </div>
+                    <div className="mb-4">
+                      <label className="text-sm font-bold">Pilih Lokasi:</label>
+                      <select
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                        value={selectedLokasi}
+                        required
+                        onChange={(e) => setSelectedLokasi(e.target.value)}
+                      >
+                        <option value="">-- Pilih Lokasi Rak --</option>
+                        {lokasiList.map((loc) => (
+                          <option
+                            key={`${loc.gudang_id}-${loc.rak_id}`}
+                            value={`${loc.gudang_id}-${loc.rak_id}`}
+                          >
+                            {loc.nama_gudang} - {loc.nama_rak} (Stok:{" "}
+                            {loc.stok_lokasi})
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
@@ -286,14 +330,29 @@ export default function Transaksi() {
                       Lokasi Rak
                     </h3>
                   </div>
-                  <p className="text-4xl font-black mb-2">
+                  {/* Menampilkan Lokasi Dinamis */}
+                  <p className="text-1xl md:text-1xl font-black mb-2 truncate">
+                    {barang ? labelLokasi : "--"}
+                  </p>
+
+                  {/* Menampilkan Instruksi Dinamis */}
+                  <p className="text-blue-100 text-sm leading-relaxed">
+                    {barang
+                      ? infoTeks.split("|").map((line, i) => (
+                          <span key={i} className="block">
+                            {line}
+                          </span>
+                        ))
+                      : "Scan barang untuk melihat daftar lokasi penyimpanan."}
+                  </p>
+                  {/* <p className="text-4xl font-black mb-2">
                     {barang ? barang.lokasi_rak : "--"}
                   </p>
                   <p className="text-blue-100 text-sm leading-relaxed">
                     {barang
                       ? `Pastikan barang diletakkan kembali ke rak ${barang.lokasi_rak} setelah diproses.`
                       : "Scan barang untuk melihat lokasi penyimpanan."}
-                  </p>
+                  </p> */}
                 </CardContent>
               </Card>
 

@@ -231,6 +231,16 @@ export default function Dashboard() {
                           fontSize={10}
                           axisLine={false}
                           tickLine={false}
+                          interval={0} // Memaksa semua label muncul
+                          // angle={-45} // Memutar teks
+                          // textAnchor="end" // Memastikan ujung teks menempel di garis axis
+                          // height={60} // Menambah ruang bawah agar teks yang miring tidak terpotong
+                          //interval="preserveStartEnd" // Menyembunyikan label yang akan bertabrakan
+                          tickFormatter={(value) =>
+                            value.length > 10
+                              ? `${value.substring(0, 10)}...`
+                              : value
+                          }
                         />
                         <YAxis
                           fontSize={10}
@@ -254,8 +264,14 @@ export default function Dashboard() {
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full flex items-center justify-center animate-pulse text-slate-300">
-                      Loading Chart...
+                    <div className="h-full flex items-center justify-center animate-pulse text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm font-medium">
+                          {/* Memuat Analisis Arus Barang... */}
+                          Loading Chart...
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -337,8 +353,17 @@ export default function Dashboard() {
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full flex items-center justify-center animate-pulse text-slate-300">
-                      Loading Chart...
+                    // <div className="h-full flex items-center justify-center animate-pulse text-slate-300">
+                    //   Loading Chart...
+                    // </div>
+                    <div className="h-full flex items-center justify-center animate-pulse text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm font-medium">
+                          {/* Memuat Analisis Arus Barang... */}
+                          Loading Chart...
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -356,95 +381,98 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="h-[350px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData.lineData}>
-                    <defs>
-                      <linearGradient
-                        id="colorMasuk"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#22c55e"
-                          stopOpacity={0.1}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#22c55e"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                      <linearGradient
-                        id="colorKeluar"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#ef4444"
-                          stopOpacity={0.1}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#ef4444"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#f1f5f9"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: "10px",
-                        border: "none",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                      }}
-                    />
-                    <Legend verticalAlign="top" align="right" height={36} />
-                    <Area
-                      name="Barang Masuk"
-                      type="monotone"
-                      dataKey="masuk"
-                      stroke="#22c55e"
-                      fillOpacity={1}
-                      fill="url(#colorMasuk)"
-                      strokeWidth={3}
-                    />
-                    <Area
-                      name="Barang Keluar"
-                      type="monotone"
-                      dataKey="keluar"
-                      stroke="#ef4444"
-                      fillOpacity={1}
-                      fill="url(#colorKeluar)"
-                      strokeWidth={3}
-                    />
-                    <Area
-                      name="Barang Pending"
-                      type="monotone"
-                      dataKey="pending"
-                      stroke="#5e44efff"
-                      fillOpacity={1}
-                      fill="url(#colorKeluar)"
-                      strokeWidth={3}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {/* Logika Loading di sini: Jika chartData ada, tampilkan Chart, jika tidak tampilkan Loading */}
+                {isMounted ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData.lineData}>
+                      <defs>
+                        <linearGradient
+                          id="colorMasuk"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#22c55e"
+                            stopOpacity={0.1}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#22c55e"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="colorKeluar"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#ef4444"
+                            stopOpacity={0.1}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#ef4444"
+                            stopOpacity={0}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#f1f5f9"
+                      />
+                      <XAxis
+                        dataKey="name"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          borderRadius: "10px",
+                          border: "none",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                        }}
+                      />
+                      <Legend verticalAlign="top" align="right" height={36} />
+                      <Area
+                        name="Barang Masuk"
+                        type="monotone"
+                        dataKey="masuk"
+                        stroke="#22c55e"
+                        fillOpacity={1}
+                        fill="url(#colorMasuk)"
+                        strokeWidth={3}
+                      />
+                      <Area
+                        name="Barang Keluar"
+                        type="monotone"
+                        dataKey="keluar"
+                        stroke="#ef4444"
+                        fillOpacity={1}
+                        fill="url(#colorKeluar)"
+                        strokeWidth={3}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center animate-pulse text-slate-400">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm font-medium">
+                        Loading Chart...
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

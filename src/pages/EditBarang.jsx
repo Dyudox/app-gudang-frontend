@@ -25,8 +25,6 @@ export default function EditBarang() {
     nama_barang: "",
     merk: "",
     kategori_id: "",
-    stok: 0,
-    lokasi_rak: "",
     keterangan: "",
   });
 
@@ -50,13 +48,6 @@ export default function EditBarang() {
       console.error("Gagal load rak:", err);
       setRakList([]);
     }
-  };
-
-  // 2. Fungsi untuk handle perubahan gudang
-  const handleGudangChange = async (e) => {
-    const gudangId = e.target.value;
-    setFormData({ ...formData, lokasi_gudang: gudangId, lokasi_rak: "" });
-    await fetchRakByGudang(gudangId);
   };
 
   // 3. Efek untuk memuat data awal (Edit)
@@ -214,75 +205,6 @@ export default function EditBarang() {
                       ))}
                     </select>
                   </div>
-                  {/* <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Lokasi Rak
-                    </label>
-                    <input
-                      name="lokasi_rak"
-                      value={formData.lokasi_rak || ""}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                      onChange={handleChange}
-                    />
-                  </div> */}
-                  {/* Lokasi gudang */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Lokasi Gudang
-                    </label>
-                    <select
-                      name="lokasi_gudang"
-                      value={formData.lokasi_gudang}
-                      onChange={handleGudangChange}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                    >
-                      <option value="">Pilih Gudang</option>
-                      {gudangList.map((g) => {
-                        // Console log ini akan muncul 10 kali di konsol browser kamu (sesuai jumlah data)
-                        // console.log("Item gudang yang diproses:", g);
-
-                        return (
-                          <option key={g.id} value={g.id}>
-                            {g.nama_gudang}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-
-                  {/* Lokasi Rak */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">
-                      Lokasi Rak
-                    </label>
-                    <select
-                      name="lokasi_rak"
-                      value={formData.lokasi_rak}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                      disabled={!formData.lokasi_gudang}
-                    >
-                      <option value="">Pilih Rak</option>
-                      {rakList.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.nama_rak}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">
-                    Stok
-                  </label>
-                  <input
-                    type="number"
-                    name="stok"
-                    placeholder="0"
-                    value={formData.stok || "0"}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                    onChange={handleChange}
-                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-700">

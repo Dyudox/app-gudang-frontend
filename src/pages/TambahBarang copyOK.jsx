@@ -15,6 +15,9 @@ import { useNavigate, Link } from "react-router-dom";
 export default function TambahBarang() {
   const navigate = useNavigate();
   const [kategoriList, setKategoriList] = useState([]);
+  const [gudangList, setGudangList] = useState([]);
+  const [rakList, setRakList] = useState([]);
+
   const [loading, setLoading] = useState(false);
 
   // State Form
@@ -23,6 +26,9 @@ export default function TambahBarang() {
     nama_barang: "",
     merk: "",
     kategori_id: "",
+    stok: 0,
+    lokasi_gudang: "",
+    lokasi_rak: "",
     keterangan: "",
     barcode: "",
   });
@@ -68,6 +74,29 @@ export default function TambahBarang() {
     fetchGudang();
   }, []);
 
+  // 3. Tambahkan fungsi untuk Fetch Rak saat Gudang dipilih
+  const handleGudangChange = async (gudangId) => {
+    if (!gudangId) {
+      setRakList([]);
+      return;
+    }
+    // const gudangId = e.target.value;
+    // setFormData({ ...formData, lokasi_gudang: gudangId, lokasi_rak: "" }); // Reset rak saat gudang ganti
+
+    if (gudangId) {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:5000/api/barang/rak/by-gudang/${gudangId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setRakList(res.data);
+    } else {
+      setRakList([]);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -96,6 +125,10 @@ export default function TambahBarang() {
       serial_number: formData.serial_number,
       keterangan: formData.keterangan,
       barcode: formData.barcode,
+      // Lokasi data
+      lokasi_gudang: formData.lokasi_gudang,
+      lokasi_rak: formData.lokasi_rak,
+      stok: parseInt(formData.stok), // Pastikan stok berbentuk angka
     };
 
     try {
@@ -117,6 +150,16 @@ export default function TambahBarang() {
   const kategoriOptions = kategoriList.map((g) => ({
     value: g.id,
     label: g.nama_kategori,
+  }));
+
+  const gudangOptions = gudangList.map((g) => ({
+    value: g.id,
+    label: g.nama_gudang,
+  }));
+
+  const rakOptions = rakList.map((r) => ({
+    value: r.id,
+    label: r.nama_rak,
   }));
 
   return (
@@ -228,6 +271,104 @@ export default function TambahBarang() {
                         ))}
                       </select> */}
                     </div>
+
+                    {/* Lokasi gudang */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700">
+                        Lokasi Gudang
+                      </label>
+                      <Select
+                        options={gudangOptions}
+                        value={
+                          gudangOptions.find(
+                            (o) => o.value == formData.lokasi_gudang,
+                          ) || null
+                        }
+                        onChange={(val) => {
+                          setFormData({
+                            ...formData,
+                            lokasi_gudang: val?.value || "",
+                            lokasi_rak: "",
+                          });
+                          if (val) handleGudangChange(val.value); // Trigger load rak
+                        }}
+                        placeholder="Pilih Gudang"
+                        isClearable
+                      />
+                      {/* <select
+                        name="lokasi_gudang"
+                        value={formData.lokasi_gudang}
+                        onChange={handleGudangChange}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                      >
+                        <option value="">Pilih Gudang</option>
+                        {gudangList.map((g) => {
+                          // Console log ini akan muncul 10 kali di konsol browser kamu (sesuai jumlah data)
+                          // console.log("Item gudang yang diproses:", g);
+
+                          return (
+                            <option key={g.id} value={g.id}>
+                              {g.nama_gudang}
+                            </option>
+                          );
+                        })}
+                      </select> */}
+                    </div>
+
+                    {/* Lokasi Rak */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700">
+                        Lokasi Rak *
+                      </label>
+                      <Select
+                        options={rakOptions}
+                        required
+                        value={
+                          rakOptions.find(
+                            (option) => option.value == formData.lokasi_rak,
+                          ) || null
+                        }
+                        onChange={(selectedOption) => {
+                          // React-select mengembalikan object, bukan event
+                          setFormData({
+                            ...formData,
+                            lokasi_rak: selectedOption
+                              ? selectedOption.value
+                              : "",
+                          });
+                        }}
+                        placeholder="Pilih Rak"
+                        isClearable
+                      />
+                      {/* <select
+                        name="lokasi_rak"
+                        value={formData.lokasi_rak}
+                        onChange={handleChange}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                        disabled={!formData.lokasi_gudang}
+                      >
+                        <option value="">Pilih Rak</option>
+                        {rakList.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.nama_rak}
+                          </option>
+                        ))}
+                      </select> */}
+                    </div>
+                  </div>
+
+                  {/* Stok */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700">
+                      Stok Awal
+                    </label>
+                    <input
+                      type="number"
+                      name="stok"
+                      placeholder="0"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      onChange={handleChange}
+                    />
                   </div>
 
                   {/* Keterangan */}
